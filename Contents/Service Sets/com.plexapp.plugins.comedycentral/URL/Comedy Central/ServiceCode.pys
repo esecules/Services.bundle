@@ -2,7 +2,7 @@ MRSS_URL = 'http://www.cc.com/feeds/mrss?uri=%s'
 NAMESPACES = {'media': 'http://search.yahoo.com/mrss/'}
 
 RE_FIX_XML = Regex('(<!--.*?-->)')
-RE_BITRATE = Regex('_\d+x\d+_(\d+).*\.mp4')
+RE_BITRATE = Regex('_\d+x\d+_(\d+)_?')
 
 MediaObject.audio_channels = 2
 MediaObject.optimized_for_streaming = True
@@ -126,8 +126,11 @@ def MediaObjectsForURL(url):
 			if int(rendition.get('height')) < 360:
 				continue
 
-			rtmp_url = rendition.xpath('./src/text()')[0]
-			bitrate = RE_BITRATE.search(rtmp_url).group(1)
+			if 'bitrate' in rendition:
+				bitrate = rendition.get('bitrate')
+			else:
+				rtmp_url = rendition.xpath('./src/text()')[0]
+				bitrate = RE_BITRATE.search(rtmp_url).group(1)
 
 			if bitrate not in available_streams:
 				available_streams[bitrate] = []
